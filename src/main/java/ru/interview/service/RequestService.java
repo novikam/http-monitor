@@ -44,11 +44,11 @@ public class RequestService {
     private void init() {
         requestCache = new ArrayBlockingQueue(maximumBufferSize);
         client = ClientBuilder.newClient();
+        createTaskHandler();
         List<TaskEntity> all = taskDao.findAll();
         if (!all.isEmpty()) {
             all.stream().forEach(task -> requestCache.add(task));
         }
-        createTaskHandler();
     }
 
     public boolean addTask(TaskEntity taskEntity) {

@@ -88,7 +88,7 @@ public class TaskEntity {
 
     public String buildRequestPath() {
         StringBuilder sb = new StringBuilder("http://");
-        sb.append(host).append(":").append(port).append(path);
+        sb.append(host).append(":").append(port).append("/").append(path);
         return sb.toString();
     }
 }
