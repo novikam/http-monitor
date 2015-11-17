@@ -1,0 +1,5 @@
+CREATE DATABASE monitor_db;
+CREATE USER test WITH PASSWORD 'test123456';
+GRANT ALL PRIVILEGES ON  DATABASE  monitor_db to test;
+CREATE TABLE task(id bigint PRIMARY KEY, host VARCHAR(255), port SMALLINT, path VARCHAR(255));
+CREATE TABLE task_result(id bigint PRIMARY KEY, host VARCHAR(255), port SMALLINT, path VARCHAR(255), status SMALLINT);
