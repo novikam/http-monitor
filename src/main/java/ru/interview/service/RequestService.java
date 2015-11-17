@@ -41,19 +41,19 @@ public class RequestService {
     private Client client;
 
     @PostConstruct
-    private void init(){
+    private void init() {
         requestCache = new ArrayBlockingQueue(maximumBufferSize);
         client = ClientBuilder.newClient();
         List<TaskEntity> all = taskDao.findAll();
-        if(!all.isEmpty()){
+        if (!all.isEmpty()) {
             all.stream().forEach(task -> requestCache.add(task));
         }
         createTaskHandler();
     }
 
-    public boolean addTask(TaskEntity taskEntity){
-        if(!requestCache.contains(taskEntity)){
-            if(requestCache.remainingCapacity() < 1){
+    public boolean addTask(TaskEntity taskEntity) {
+        if (!requestCache.contains(taskEntity)) {
+            if (requestCache.remainingCapacity() < 1) {
                 return false;
             }
             taskDao.saveAndFlush(taskEntity);
@@ -62,10 +62,10 @@ public class RequestService {
         return true;
     }
 
-    private void createTaskHandler(){
+    private void createTaskHandler() {
         Thread handler = new Thread(() -> {
-            while (true){
-                if(!requestCache.isEmpty()){
+            while (true) {
+                if (!requestCache.isEmpty()) {
                     TaskEntity peek = requestCache.peek();
                     executeTask(peek);
                     requestCache.remove(peek);
@@ -76,24 +76,24 @@ public class RequestService {
         handler.start();
     }
 
-    private void executeTask(TaskEntity entity){
+    private void executeTask(TaskEntity entity) {
         int status;
         try {
             status = client.target(entity.buildRequestPath()).request().get().getStatus();
-        }catch (Exception e){
+        } catch (Exception e) {
             status = HttpStatus.BAD_GATEWAY.value();
         }
-            TaskResultEntity taskResultFromDB = taskResultDao.find(entityManager, entity);
-            if (taskResultFromDB != null) {
-                if (taskResultFromDB.getStatus() != status) {
-                    taskResultFromDB.setStatus(status);
-                    taskResultDao.save(taskResultFromDB);
-                }
-            } else {
-                TaskResultEntity taskResultEntity = TaskResultEntity.fromTaskEntity(entity);
-                taskResultEntity.setStatus(status);
-                taskResultDao.save(taskResultEntity);
+        TaskResultEntity taskResultFromDB = taskResultDao.find(entityManager, entity);
+        if (taskResultFromDB != null) {
+            if (taskResultFromDB.getStatus() != status) {
+                taskResultFromDB.setStatus(status);
+                taskResultDao.save(taskResultFromDB);
             }
+        } else {
+            TaskResultEntity taskResultEntity = TaskResultEntity.fromTaskEntity(entity);
+            taskResultEntity.setStatus(status);
+            taskResultDao.save(taskResultEntity);
+        }
 
     }
 
